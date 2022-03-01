@@ -74,17 +74,21 @@ public class CrateBlock extends Block implements BlockEntityProvider {
     public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
         CrateBlockEntity crate = (CrateBlockEntity) world.getBlockEntity(pos);
         if(!world.isClient && crate != null) {
-            //make item and set nbt
-            NbtCompound blockNBT = new NbtCompound();
-            crate.writeNbt(blockNBT);
+            //make item and set nbt if needed
             ItemStack stack = new ItemStack(SimpleCrates.CRATE_ITEM);
-            stack.setSubNbt("BlockEntityTag", blockNBT);
-            //set display nbt TODO fix this part
-            NbtCompound displayNBT = new NbtCompound();
-            NbtList loreNBT = new NbtList();
-            loreNBT.add(NbtString.of("Contains Items"));
-            displayNBT.put("Lore", loreNBT);
-            stack.setSubNbt("display", displayNBT);
+            if(!crate.items.isEmpty()) {
+                NbtCompound blockNBT = new NbtCompound();
+                crate.writeNbt(blockNBT);
+                stack.setSubNbt("BlockEntityTag", blockNBT);
+                //set display nbt
+                NbtCompound displayNBT = new NbtCompound();
+                NbtList loreNBT = new NbtList();
+                loreNBT.add(NbtString.of(
+                        "[{\"text\":\"(Contains Items)\",\"color\":\"purple\"}]"
+                ));
+                displayNBT.put("Lore", loreNBT);
+                stack.setSubNbt("display", displayNBT);
+            }
             //drop the item
             ItemEntity entity = new ItemEntity(world, pos.getX()+0.5, pos.getY()+0.5, pos.getZ()+0.5, stack);
             entity.setToDefaultPickupDelay();
