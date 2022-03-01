@@ -1,29 +1,28 @@
 {
   "schemaVersion": 1,
-  "id": "modid",
+  "id": "simplecrates",
   "version": "${version}",
 
-  "name": "Example Mod",
+  "name": "Simple Crates",
   "description": "This is an example description! Tell everyone what your mod is about!",
   "authors": [
-    "Me!"
+    "Sunroses"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://sunrose.xyz/",
+    "sources": "https://github.com/deli73/simple-crates"
   },
 
-  "license": "CC0-1.0",
-  "icon": "assets/modid/icon.png",
+  "license": "",
+  "icon": "assets/simplecrates/icon.png",
 
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.fabricmc.example.ExampleMod"
+      "xyz.sunrose.simplecrates.SimpleCrates"
     ]
   },
   "mixins": [
-    "modid.mixins.json"
   ],
 
   "depends": {
