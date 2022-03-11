@@ -89,10 +89,12 @@ public class CrateBlock extends Block implements BlockEntityProvider {
                 displayNBT.put("Lore", loreNBT);
                 stack.setSubNbt("display", displayNBT);
             }
-            //drop the item
-            ItemEntity entity = new ItemEntity(world, pos.getX()+0.5, pos.getY()+0.5, pos.getZ()+0.5, stack);
-            entity.setToDefaultPickupDelay();
-            world.spawnEntity(entity);
+            //drop the item if non-empty or in survival
+            if(!crate.items.isEmpty() || !player.isCreative()) {
+                ItemEntity entity = new ItemEntity(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
+                entity.setToDefaultPickupDelay();
+                world.spawnEntity(entity);
+            }
         }
 
         super.onBreak(world, pos, state, player);

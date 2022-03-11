@@ -12,6 +12,7 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 
 import javax.annotation.Nullable;
 import java.util.ArrayDeque;
@@ -23,14 +24,16 @@ public class CrateBlockEntity extends BlockEntity {
     protected Item item = null;
     protected int size = 0;
     protected ArrayDeque<ItemStack> items;
+    public Direction FACING;
 
     public CrateBlockEntity(BlockPos pos, BlockState state) {
         super(SimpleCrates.CRATE_BE, pos, state);
         items = new ArrayDeque<>(MAX_ITEMS);
+        FACING = state.get(CrateBlock.FACING);
     }
 
     public boolean push(ItemStack stack){
-        if(stack.isEmpty()){
+        if(stack.isEmpty() || this.size == MAX_ITEMS){
             return false;
         }
         if(item == null || stack.getItem().equals(item)){
@@ -50,6 +53,14 @@ public class CrateBlockEntity extends BlockEntity {
                 items.push(stack);
                 item = stack.getItem();
                 size += stack.getCount();
+            }
+
+            //attempt to cap item count, doesn't work right fsr, TODO fix
+            if(this.size > MAX_ITEMS){
+                int diff = this.size - MAX_ITEMS;
+                stack.increment(diff);
+                this.items.peekFirst().decrement(diff);
+                size -= diff;
             }
             this.markDirty();
             return true;

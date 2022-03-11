@@ -20,6 +20,9 @@
   "entrypoints": {
     "main": [
       "xyz.sunrose.simplecrates.SimpleCrates"
+    ],
+    "client": [
+      "xyz.sunrose.simplecrates.SimpleCratesClient"
     ]
   },
   "mixins": [
