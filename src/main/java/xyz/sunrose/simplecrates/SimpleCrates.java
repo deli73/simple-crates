@@ -1,6 +1,7 @@
 package xyz.sunrose.simplecrates;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
@@ -14,12 +15,14 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import xyz.sunrose.simplecrates.util.CrateNet;
 
 public class SimpleCrates implements ModInitializer {
     public static final String MODID = "simplecrates";
     public static final Logger LOGGER = LoggerFactory.getLogger(MODID);
+    public static final Identifier NET_CRATE_UPDATE = new Identifier(MODID, "crate_update");
 
-    public static Identifier crate_id = new Identifier(MODID, "crate");
+    public static final Identifier crate_id = new Identifier(MODID, "crate");
 
     public static final Block CRATE = Registry.register(
             Registry.BLOCK, crate_id,
@@ -38,6 +41,8 @@ public class SimpleCrates implements ModInitializer {
 
     @Override
     public void onInitialize() {
-
+        ClientPlayNetworking.registerGlobalReceiver(
+                NET_CRATE_UPDATE, CrateNet::crateRecieve
+        );
     }
 }

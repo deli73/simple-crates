@@ -21,6 +21,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,6 +44,16 @@ public class CrateBlock extends Block implements BlockEntityProvider {
         return true;
     }
 
+    public int getComparatorOutput(BlockState state, World world, BlockPos pos) {
+        CrateBlockEntity crate = (CrateBlockEntity) world.getBlockEntity(pos);
+        if(crate==null){
+            return 0;
+        }
+        //emulate vanilla container output levels
+        float amount = (float)crate.size / CrateBlockEntity.MAX_ITEMS;
+        return MathHelper.floor(amount * 14) + (crate.size > 0 ? 1 : 0);
+    }
+
     // USE
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         CrateBlockEntity crateBE = (CrateBlockEntity) world.getBlockEntity(pos);
@@ -62,7 +73,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
                     return ActionResult.SUCCESS;
                 }
             }
-            else if (crateBE.push(held.copy())) {
+            else if (crateBE.tryPush(held.copy())) {
                 held.decrement(held.getCount()); //item go poof
                 return ActionResult.SUCCESS;
             }
