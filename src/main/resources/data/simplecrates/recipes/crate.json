@@ -7,10 +7,10 @@
   ],
   "key": {
     "#": {
-      "item": "minecraft:iron_nugget"
+      "item": "minecraft:chain"
     },
     "P": {
-      "tag": "minecraft:planks"
+      "tag": "minecraft:logs"
     }
   },
   "result": {

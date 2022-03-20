@@ -41,8 +41,8 @@ public class CrateRenderer<T extends BlockEntity> implements BlockEntityRenderer
             Quaternion rotation;
             tx=0;ty=0;tz=0;
             rotation = Quaternion.IDENTITY;
-            switch (crate.FACING){
-                case UP:
+            switch (crate.FACING) {
+                case UP -> {
                     rotation = Vec3f.POSITIVE_X.getDegreesQuaternion(90);
                     //+Z rotates to -Y
                     rotation.hamiltonProduct(Vec3f.NEGATIVE_Y.getDegreesQuaternion(180));
@@ -50,56 +50,57 @@ public class CrateRenderer<T extends BlockEntity> implements BlockEntityRenderer
                     ty = 1f;
                     tz = 0.5f;
                     text_tx = tx;
-                    text_ty = ty+ TEXT_OFFSET;
+                    text_ty = ty + TEXT_OFFSET;
                     text_tz = tz;
-                    break;
-                case DOWN:
+                }
+                case DOWN -> {
                     rotation = Vec3f.POSITIVE_X.getDegreesQuaternion(-90);
                     //+Z rotates to +Y
                     rotation.hamiltonProduct(Vec3f.POSITIVE_Y.getDegreesQuaternion(180));
                     tx = 0.5f;
                     tz = 0.5f;
                     text_tx = tx;
-                    text_ty = ty- TEXT_OFFSET;
+                    text_ty = ty - TEXT_OFFSET;
                     text_tz = tz;
-                    break;
-                case EAST:
+                }
+                case EAST -> {
                     rotation = Vec3f.POSITIVE_Y.getDegreesQuaternion(90);
                     tx = 1f;
                     ty = 0.5f;
                     tz = 0.5f;
-                    text_tx = tx+ TEXT_OFFSET;
+                    text_tx = tx + TEXT_OFFSET;
                     text_ty = ty;
                     text_tz = tz;
-                    break;
-                case WEST:
+                }
+                case WEST -> {
                     rotation = Vec3f.POSITIVE_Y.getDegreesQuaternion(-90);
                     ty = 0.5f;
                     tz = 0.5f;
-                    text_tx = tx- TEXT_OFFSET;
+                    text_tx = tx - TEXT_OFFSET;
                     text_ty = ty;
                     text_tz = tz;
-                    break;
-                case NORTH:
+                }
+                case NORTH -> {
                     rotation = Vec3f.POSITIVE_Y.getDegreesQuaternion(180);
-                    tx=0.5f;
-                    ty=0.5f;
+                    tx = 0.5f;
+                    ty = 0.5f;
                     text_tx = tx;
                     text_ty = ty;
-                    text_tz = tz- TEXT_OFFSET;
-                    break;
-                case SOUTH:
+                    text_tz = tz - TEXT_OFFSET;
+                }
+                case SOUTH -> {
                     tx = 0.5f;
                     ty = 0.5f;
                     tz = 1f;
                     text_tx = tx;
                     text_ty = ty;
-                    text_tz = tz+ TEXT_OFFSET;
-                    break;
-                default:
+                    text_tz = tz + TEXT_OFFSET;
+                }
+                default -> {
                     text_tx = tx;
                     text_ty = ty;
                     text_tz = tz;
+                }
             }
 
             //render item
@@ -121,11 +122,10 @@ public class CrateRenderer<T extends BlockEntity> implements BlockEntityRenderer
                     sizeStr = String.valueOf(crate.size);
                 }
                 else {
-                    int thousands = crate.size/1000;
-                    sizeStr = String.valueOf(thousands).concat("k");
+                    float thousands = crate.size/1000f;
+                    sizeStr = String.format("%,.1f",thousands).concat("k");
                 }
-                //TODO remove, this is for testing
-                sizeStr = String.valueOf(crate.size);
+                //sizeStr = String.valueOf(crate.size);
                 //trial and error numbers, again
                 float stringX = (float)(20.5-this.textRenderer.getWidth(sizeStr));
                 float stringY = 12;

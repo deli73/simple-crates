@@ -4,7 +4,7 @@
   "version": "${version}",
 
   "name": "Simple Crates",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "description": "Adds a simple bulk storage block to minecraft",
   "authors": [
     "Sunroses"
   ],
@@ -13,7 +13,7 @@
     "sources": "https://github.com/deli73/simple-crates"
   },
 
-  "license": "",
+  "license": "BSD-3",
   "icon": "assets/simplecrates/icon.png",
 
   "environment": "*",

@@ -1,7 +1,6 @@
 package xyz.sunrose.simplecrates;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -14,7 +13,6 @@ import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import xyz.sunrose.simplecrates.util.CrateNet;
 import xyz.sunrose.simplecrates.util.DequeInventoryBlockEntity;
 
 import javax.annotation.Nullable;
@@ -90,8 +88,6 @@ public class CrateBlockEntity extends DequeInventoryBlockEntity {
             this.items.peekFirst().decrement(diff);
             size -= diff;
         }*/
-
-        this.markDirty();
     }
 
     public ItemStack pop(){
@@ -127,7 +123,9 @@ public class CrateBlockEntity extends DequeInventoryBlockEntity {
 
     @Override
     public void clear() {
-
+        items.clear();
+        item = null;
+        size = 0;
     }
 
     @Override
@@ -144,15 +142,12 @@ public class CrateBlockEntity extends DequeInventoryBlockEntity {
 
     public void readNbt(NbtCompound nbt) {
         super.readNbt(nbt);
+        this.clear();
         NbtList list = nbt.getList(INVENTORY_NAME, NbtElement.COMPOUND_TYPE);
         for(NbtElement e : list) {
             ItemStack stack = ItemStack.fromNbt((NbtCompound) e);
             this.push(stack);
         }
-    }
-
-    protected void update(){
-        CrateNet.crateSend(world, this);
     }
 
     // standard block entity stuff
@@ -173,5 +168,10 @@ public class CrateBlockEntity extends DequeInventoryBlockEntity {
     @Override
     public Packet<ClientPlayPacketListener> toUpdatePacket() {
         return BlockEntityUpdateS2CPacket.create(this);
+    }
+
+    @Override
+    public void markDirty() {
+        sync();
     }
 }
