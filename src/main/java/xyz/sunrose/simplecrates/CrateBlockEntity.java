@@ -72,12 +72,14 @@ public class CrateBlockEntity extends DequeInventoryBlockEntity {
             top.increment(toAdd);
             stack.decrement(toAdd);
             size += toAdd;
+            this.comparatorUpdate();
         }
         //if there are any items left over, add a new stack
         if(!stack.isEmpty()) {
             items.push(stack);
             item = stack.getItem();
             size += stack.getCount();
+            this.comparatorUpdate();
         }
 
 
@@ -111,6 +113,7 @@ public class CrateBlockEntity extends DequeInventoryBlockEntity {
             items.push(stack);
         }
         this.markDirty();
+        this.comparatorUpdate();
         return finalStack;
     }
 
@@ -147,6 +150,12 @@ public class CrateBlockEntity extends DequeInventoryBlockEntity {
         for(NbtElement e : list) {
             ItemStack stack = ItemStack.fromNbt((NbtCompound) e);
             this.push(stack);
+        }
+    }
+
+    private void comparatorUpdate() {
+        if(this.world != null && !this.world.isClient) {
+            this.world.updateComparators(pos, this.getCachedState().getBlock());
         }
     }
 
