@@ -6,6 +6,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayDeque;
@@ -44,7 +45,14 @@ abstract public class DequeInventoryBlockEntity extends BlockEntity implements I
     @Override
     public ItemStack getStack(int slot) {
         if(slot==0){
-            return peek();
+            ItemStack top = peek();
+            if (top.getCount() < top.getMaxCount()) {
+                return top;
+            }
+            else if (top != ItemStack.EMPTY && canPush(new ItemStack(top.getItem(), 1))) { //if there's room for one more item...
+                return ItemStack.EMPTY; //make the container look empty so the hopper can toss another item in.
+            }
+            return top;
         }
         return null;
     }
