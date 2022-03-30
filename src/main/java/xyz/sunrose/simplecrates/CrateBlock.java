@@ -77,7 +77,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
                 held.decrement(held.getCount()); //item go poof
                 return ActionResult.SUCCESS;
             }
-            return ActionResult.FAIL;
+            return ActionResult.CONSUME_PARTIAL;
         }
         return ActionResult.PASS;
     }

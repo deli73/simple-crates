@@ -34,7 +34,7 @@ abstract public class DequeInventoryBlockEntity extends BlockEntity implements I
 
     @Override
     public int size() {
-        return 1;
+        return items.size();
     }
 
     @Override
@@ -50,7 +50,9 @@ abstract public class DequeInventoryBlockEntity extends BlockEntity implements I
                 return top;
             }
             else if (top != ItemStack.EMPTY && canPush(new ItemStack(top.getItem(), 1))) { //if there's room for one more item...
-                return ItemStack.EMPTY; //make the container look empty so the hopper can toss another item in.
+                return new ItemStack(top.getItem(), 0); //make the container look less full so the hopper can toss another item in.
+                // TODO test if this fix actually works lol
+                // (it doesn't)
             }
             return top;
         }
