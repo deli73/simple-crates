@@ -4,26 +4,33 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.loot.context.LootContext;
+import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.BlockMirror;
-import net.minecraft.util.BlockRotation;
-import net.minecraft.util.Hand;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.*;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 @SuppressWarnings("deprecation")
 public class CrateBlock extends Block implements BlockEntityProvider {
@@ -83,24 +90,48 @@ public class CrateBlock extends Block implements BlockEntityProvider {
         return ActionResult.PASS;
     }
 
+    private void setSelfStackNBT(CrateBlockEntity crate, ItemStack stack) {
+        if(!crate.items.isEmpty()) {
+            NbtCompound blockNBT = new NbtCompound();
+            crate.writeNbt(blockNBT);
+            stack.setSubNbt("BlockEntityTag", blockNBT);
+            //set display nbt
+            /*NbtCompound displayNBT = new NbtCompound();
+            NbtList loreNBT = new NbtList();
+            loreNBT.add(NbtString.of(
+                    "[{\"text\":\"(Contains Items)\",\"color\":\"purple\"}]"
+            ));
+            displayNBT.put("Lore", loreNBT);
+            stack.setSubNbt("display", displayNBT);*/
+        }
+    }
+
+    public void appendTooltip(ItemStack stack, @Nullable BlockView world, List<Text> tooltip, TooltipContext options) {
+        super.appendTooltip(stack, world, tooltip, options);
+        NbtCompound nbt = BlockItem.getBlockEntityNbt(stack);
+
+        if (nbt != null && nbt.contains(CrateBlockEntity.INVENTORY_NAME)) {
+            NbtList list = nbt.getList(CrateBlockEntity.INVENTORY_NAME, NbtElement.COMPOUND_TYPE);
+            if (list.size() > 0) {
+                int numItems = 0;
+                for(NbtElement e : list) {
+                    ItemStack listStack = ItemStack.fromNbt((NbtCompound) e);
+                    numItems += listStack.getCount(); //calculate the number of items from the NBT
+                }
+                ItemStack topStack = ItemStack.fromNbt((NbtCompound) list.get(0));
+                MutableText itemsText = topStack.getItem().getName().shallowCopy(); //grab the default name of the item
+                itemsText.append(" x").append(String.valueOf(numItems)); //add an indicator of how many there are
+                tooltip.add(itemsText);
+            }
+        }
+    }
+
     public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
         CrateBlockEntity crate = (CrateBlockEntity) world.getBlockEntity(pos);
         if(!world.isClient && crate != null) {
             //make item and set nbt if needed
             ItemStack stack = new ItemStack(SimpleCrates.CRATE_ITEM);
-            if(!crate.items.isEmpty()) {
-                NbtCompound blockNBT = new NbtCompound();
-                crate.writeNbt(blockNBT);
-                stack.setSubNbt("BlockEntityTag", blockNBT);
-                //set display nbt
-                NbtCompound displayNBT = new NbtCompound();
-                NbtList loreNBT = new NbtList();
-                loreNBT.add(NbtString.of(
-                        "[{\"text\":\"(Contains Items)\",\"color\":\"purple\"}]"
-                ));
-                displayNBT.put("Lore", loreNBT);
-                stack.setSubNbt("display", displayNBT);
-            }
+            setSelfStackNBT(crate, stack);
             //drop the item if non-empty or in survival
             if(!crate.items.isEmpty() || !player.isCreative()) {
                 ItemEntity entity = new ItemEntity(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
@@ -110,6 +141,17 @@ public class CrateBlock extends Block implements BlockEntityProvider {
         }
 
         super.onBreak(world, pos, state, player);
+    }
+
+    @Override
+    public List<ItemStack> getDroppedStacks(BlockState state, LootContext.Builder builder) {
+        List<ItemStack> items = super.getDroppedStacks(state, builder);
+        for(ItemStack stack : items) {
+            if(stack.getItem() == SimpleCrates.CRATE_ITEM) {
+                setSelfStackNBT((CrateBlockEntity) builder.get(LootContextParameters.BLOCK_ENTITY), stack);
+            }
+        }
+        return items;
     }
 
     public BlockState getPlacementState(ItemPlacementContext ctx){
