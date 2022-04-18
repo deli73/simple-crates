@@ -116,13 +116,14 @@ public class CrateRenderer<T extends BlockEntity> implements BlockEntityRenderer
             matrices.pop();
 
             //render item count text if there's more than one item in the crate
-            if(crate.size > 1){
+            int size = crate.getSize();
+            if(size > 1){
                 String sizeStr;
-                if(crate.size < 1000){
-                    sizeStr = String.valueOf(crate.size);
+                if(size < 1000){
+                    sizeStr = String.valueOf(size);
                 }
                 else {
-                    float thousands = crate.size/1000f;
+                    float thousands = size/1000f;
                     sizeStr = String.format("%,.1f",thousands).concat("k");
                 }
                 //sizeStr = String.valueOf(crate.size);

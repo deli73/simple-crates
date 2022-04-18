@@ -50,8 +50,9 @@ public class CrateBlock extends Block implements BlockEntityProvider {
             return 0;
         }
         //emulate vanilla container output levels
-        float amount = (float)crate.size / CrateBlockEntity.MAX_ITEMS;
-        return MathHelper.floor(amount * 14) + (crate.size > 0 ? 1 : 0);
+        int size = crate.getSize();
+        float amount = (float)size / CrateBlockEntity.MAX_ITEMS;
+        return MathHelper.floor(amount * 14) + (size > 0 ? 1 : 0);
     }
 
     // USE

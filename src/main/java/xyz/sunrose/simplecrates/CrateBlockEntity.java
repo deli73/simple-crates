@@ -23,7 +23,6 @@ public class CrateBlockEntity extends ListInventoryBlockEntity {
     protected static final int MAX_ITEMS = 64*27*2; //number of items in a double chest full of 64-stacks
     protected static final String INVENTORY_NAME = "Items";
 
-    protected Item item = null;
     protected int size = 0;
     public Direction FACING;
 
@@ -33,8 +32,16 @@ public class CrateBlockEntity extends ListInventoryBlockEntity {
         FACING = state.get(CrateBlock.FACING);
     }
 
+    public int getSize() {
+        int size = 0;
+        if (items.size() > 0) for(ItemStack stack : this.items) {
+            size += stack.getCount();
+        }
+        return size;
+    }
+
     private int getSpace(){
-        return MAX_ITEMS - this.size;
+        return MAX_ITEMS - this.getSize();
     }
 
     protected Item getItem() {
@@ -56,15 +63,13 @@ public class CrateBlockEntity extends ListInventoryBlockEntity {
                 int toAdd = Math.min(diff, available);
                 s.increment(toAdd);
                 stack.decrement(toAdd);
-                size += toAdd;
-                this.comparatorUpdate();
+                this.markDirty();
             }
         }
         //if there are any items left over, add a new stack
         if(!stack.isEmpty()) {
             items.add(0, stack);
-            size += stack.getCount();
-            this.comparatorUpdate();
+            this.markDirty();
         }
 
 
@@ -108,15 +113,12 @@ public class CrateBlockEntity extends ListInventoryBlockEntity {
         }
 
         this.markDirty();
-        this.comparatorUpdate();
         return extracted;
     }
 
     @Override
     public void clear() {
         items.clear();
-        //item = null;
-        size = 0;
     }
 
     @Override
@@ -164,6 +166,7 @@ public class CrateBlockEntity extends ListInventoryBlockEntity {
     @Override
     public void markDirty() {
         if(world == null || world.isClient) {return;}
+        comparatorUpdate();
         PlayerLookup.tracking(this).forEach(player -> player.networkHandler.sendPacket(toUpdatePacket()));
         super.markDirty();
     }

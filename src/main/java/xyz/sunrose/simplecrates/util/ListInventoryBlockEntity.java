@@ -62,7 +62,9 @@ abstract public class ListInventoryBlockEntity extends BlockEntity implements In
     @Override
     public ItemStack removeStack(int slot) {
         try {
-            return takeStack();
+            ItemStack stack = takeStack();
+            this.markDirty();
+            return stack;
         } catch (IndexOutOfBoundsException e) {
             return ItemStack.EMPTY;
         }
@@ -75,6 +77,7 @@ abstract public class ListInventoryBlockEntity extends BlockEntity implements In
         } catch (IndexOutOfBoundsException e) {
             items.add(stack);
         }
+        this.markDirty();
     }
 
     @Override
