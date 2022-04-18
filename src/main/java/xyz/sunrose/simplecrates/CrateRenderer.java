@@ -29,7 +29,7 @@ public class CrateRenderer<T extends BlockEntity> implements BlockEntityRenderer
         CrateBlockEntity crate = (CrateBlockEntity) entity;
 
         //render item
-        if (crate.getItem() != null){
+        if (crate.getItem() != null && crate.getWorld() != null){
             ItemStack stack = new ItemStack(crate.getItem());
             int lightFront = WorldRenderer.getLightmapCoordinates(crate.getWorld(), crate.getPos().offset(crate.FACING));
 
@@ -43,7 +43,7 @@ public class CrateRenderer<T extends BlockEntity> implements BlockEntityRenderer
             rotation = Quaternion.IDENTITY;
             switch (crate.FACING) {
                 case UP -> {
-                    rotation = Vec3f.POSITIVE_X.getDegreesQuaternion(90);
+                    rotation = Vec3f.POSITIVE_X.getDegreesQuaternion(-90);
                     //+Z rotates to -Y
                     rotation.hamiltonProduct(Vec3f.NEGATIVE_Y.getDegreesQuaternion(180));
                     tx = 0.5f;
@@ -54,7 +54,7 @@ public class CrateRenderer<T extends BlockEntity> implements BlockEntityRenderer
                     text_tz = tz;
                 }
                 case DOWN -> {
-                    rotation = Vec3f.POSITIVE_X.getDegreesQuaternion(-90);
+                    rotation = Vec3f.POSITIVE_X.getDegreesQuaternion(90);
                     //+Z rotates to +Y
                     rotation.hamiltonProduct(Vec3f.POSITIVE_Y.getDegreesQuaternion(180));
                     tx = 0.5f;
@@ -64,7 +64,7 @@ public class CrateRenderer<T extends BlockEntity> implements BlockEntityRenderer
                     text_tz = tz;
                 }
                 case EAST -> {
-                    rotation = Vec3f.POSITIVE_Y.getDegreesQuaternion(90);
+                    rotation = Vec3f.POSITIVE_Y.getDegreesQuaternion(-90);
                     tx = 1f;
                     ty = 0.5f;
                     tz = 0.5f;
@@ -73,7 +73,7 @@ public class CrateRenderer<T extends BlockEntity> implements BlockEntityRenderer
                     text_tz = tz;
                 }
                 case WEST -> {
-                    rotation = Vec3f.POSITIVE_Y.getDegreesQuaternion(-90);
+                    rotation = Vec3f.POSITIVE_Y.getDegreesQuaternion(90);
                     ty = 0.5f;
                     tz = 0.5f;
                     text_tx = tx - TEXT_OFFSET;
@@ -81,7 +81,6 @@ public class CrateRenderer<T extends BlockEntity> implements BlockEntityRenderer
                     text_tz = tz;
                 }
                 case NORTH -> {
-                    rotation = Vec3f.POSITIVE_Y.getDegreesQuaternion(180);
                     tx = 0.5f;
                     ty = 0.5f;
                     text_tx = tx;
@@ -89,6 +88,7 @@ public class CrateRenderer<T extends BlockEntity> implements BlockEntityRenderer
                     text_tz = tz - TEXT_OFFSET;
                 }
                 case SOUTH -> {
+                    rotation = Vec3f.POSITIVE_Y.getDegreesQuaternion(180);
                     tx = 0.5f;
                     ty = 0.5f;
                     tz = 1f;
@@ -135,8 +135,7 @@ public class CrateRenderer<T extends BlockEntity> implements BlockEntityRenderer
                 matrices.translate(text_tx, text_ty, text_tz);
                 matrices.multiply(rotation);
                 matrices.scale(1f / 64, 1f / 64, 1f / 64);
-                matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180));
-                matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(180));
+                matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(180)); //why is this line necessary? no idea lmao
 
                 this.textRenderer.draw(
                         sizeStr, stringX, stringY, WHITE, false, matrices.peek().getPositionMatrix(),
