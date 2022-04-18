@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -36,9 +37,13 @@ public class CrateBlockEntity extends ListInventoryBlockEntity {
         return MAX_ITEMS - this.size;
     }
 
+    protected Item getItem() {
+        return items.size() > 0 ? items.get(0).getItem() : Items.AIR;
+    }
+
     @Override
     public boolean canPush(ItemStack stack) {
-        return !stack.isEmpty() && stack.getCount() <= getSpace() && (item == null || stack.getItem().equals(item));
+        return !stack.isEmpty() && stack.getCount() <= getSpace() && (getItem() == Items.AIR || stack.getItem().equals(getItem()));
     }
 
     @Override
@@ -46,7 +51,6 @@ public class CrateBlockEntity extends ListInventoryBlockEntity {
         //combine with exsiting stacks if possible first
         for (ItemStack s : items) {
             if (s != null && ItemStack.canCombine(s, stack) && s.getCount() < s.getMaxCount()) {
-                item = stack.getItem();
                 int diff = s.getMaxCount() - s.getCount();
                 int available = stack.getCount();
                 int toAdd = Math.min(diff, available);
@@ -59,7 +63,6 @@ public class CrateBlockEntity extends ListInventoryBlockEntity {
         //if there are any items left over, add a new stack
         if(!stack.isEmpty()) {
             items.add(0, stack);
-            item = stack.getItem();
             size += stack.getCount();
             this.comparatorUpdate();
         }
@@ -77,9 +80,9 @@ public class CrateBlockEntity extends ListInventoryBlockEntity {
     @Override
     public ItemStack takeStack() {
         if (items.size() > 1 && ItemStack.canCombine(getStack(0), getStack(1))) { //if the top two stacks are combinable
-            return takeStack(item.getMaxCount()); //grab a full stack
+            return takeStack(getItem().getMaxCount()); //grab a full stack
         } else if (items.size() < 1) {
-            return null;
+            return ItemStack.EMPTY;
         } else {
             return takeStack(items.get(0).getCount()); //otherwise grab the top stack
         }
@@ -88,28 +91,31 @@ public class CrateBlockEntity extends ListInventoryBlockEntity {
     @Override
     public ItemStack takeStack(int amount) {
         if (items.size() < 1) {
-            return null;
+            return ItemStack.EMPTY;
         }
-        ItemStack top = items.get(0).copy();
-        if(top.getCount() < amount) { //if there's room for more...
-            int diff = amount - top.getCount();
-            items.get(1).decrement(diff); //take the difference from the next stack
-            if(items.get(1).getCount() == 0) { //and delete that stack if it's emptied
-                items.remove(1);
+        ItemStack top = getStack(0);
+        ItemStack extracted = top.split(amount); //grab items from the top stack
+        if(top.isEmpty()) {
+            items.remove(0);
+        }
+        if(extracted.getCount() < amount && ItemStack.canCombine(extracted, getStack(0))) { //if there's room for more...
+            int diff = amount - extracted.getCount();
+            items.get(0).decrement(diff); //take the difference from the next stack
+            if(items.get(0).getCount() == 0) { //and delete that stack if it's emptied, though that should never happen
+                items.remove(0);
             }
-            top.increment(diff); //then add those items to the new stack
+            extracted.increment(diff); //then add those items to the new stack
         }
-        items.remove(0); //remove the top stack as we take it
 
         this.markDirty();
         this.comparatorUpdate();
-        return top;
+        return extracted;
     }
 
     @Override
     public void clear() {
         items.clear();
-        item = null;
+        //item = null;
         size = 0;
     }
 

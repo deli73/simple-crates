@@ -29,8 +29,8 @@ public class CrateRenderer<T extends BlockEntity> implements BlockEntityRenderer
         CrateBlockEntity crate = (CrateBlockEntity) entity;
 
         //render item
-        if (crate.item != null){
-            ItemStack stack = new ItemStack(crate.item);
+        if (crate.getItem() != null){
+            ItemStack stack = new ItemStack(crate.getItem());
             int lightFront = WorldRenderer.getLightmapCoordinates(crate.getWorld(), crate.getPos().offset(crate.FACING));
 
 
