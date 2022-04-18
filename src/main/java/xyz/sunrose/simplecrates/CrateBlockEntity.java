@@ -17,6 +17,7 @@ import xyz.sunrose.simplecrates.util.ListInventoryBlockEntity;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.List;
 
 public class CrateBlockEntity extends ListInventoryBlockEntity {
     protected static final int MAX_ITEMS = 64*27*2; //number of items in a double chest full of 64-stacks
@@ -48,7 +49,9 @@ public class CrateBlockEntity extends ListInventoryBlockEntity {
 
     @Override
     public boolean canPush(ItemStack stack) {
-        return !stack.isEmpty() && stack.getCount() <= getSpace() && (getItem() == Items.AIR || stack.getItem().equals(getItem()));
+        return !stack.isEmpty() && stack.getCount() <= getSpace()
+                && (getItem() == Items.AIR || stack.getItem().equals(getItem()))
+                && !stack.isIn(SimpleCrates.BANNED_ITEMS);
     }
 
     @Override

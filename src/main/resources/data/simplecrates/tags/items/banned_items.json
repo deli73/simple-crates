@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "simplecrates:crate",
+    "minecraft:bundle",
+    "#simplecrates:shulker_boxes"
+  ]
+}

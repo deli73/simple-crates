@@ -10,6 +10,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import org.slf4j.Logger;
@@ -36,6 +37,9 @@ public class SimpleCrates implements ModInitializer {
             Registry.BLOCK_ENTITY_TYPE, crate_id,
             FabricBlockEntityTypeBuilder.create(CrateBlockEntity::new, CRATE).build()
     );
+
+
+    public static final TagKey<Item> BANNED_ITEMS = TagKey.of(Registry.ITEM_KEY, new Identifier(MODID, "banned_items"));
 
     @Override
     public void onInitialize() {

@@ -15,13 +15,15 @@ import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.*;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.BlockMirror;
+import net.minecraft.util.BlockRotation;
+import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -96,13 +98,6 @@ public class CrateBlock extends Block implements BlockEntityProvider {
             crate.writeNbt(blockNBT);
             stack.setSubNbt("BlockEntityTag", blockNBT);
             //set display nbt
-            /*NbtCompound displayNBT = new NbtCompound();
-            NbtList loreNBT = new NbtList();
-            loreNBT.add(NbtString.of(
-                    "[{\"text\":\"(Contains Items)\",\"color\":\"purple\"}]"
-            ));
-            displayNBT.put("Lore", loreNBT);
-            stack.setSubNbt("display", displayNBT);*/
         }
     }
 
