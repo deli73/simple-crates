@@ -1,9 +1,9 @@
 package xyz.sunrose.simplecrates;
 
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -13,15 +13,14 @@ import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import xyz.sunrose.simplecrates.util.DequeInventoryBlockEntity;
+import xyz.sunrose.simplecrates.util.ListInventoryBlockEntity;
 
 import javax.annotation.Nullable;
-import java.util.ArrayDeque;
+import java.util.ArrayList;
 
-public class CrateBlockEntity extends DequeInventoryBlockEntity {
+public class CrateBlockEntity extends ListInventoryBlockEntity {
     protected static final int MAX_ITEMS = 64*27*2; //number of items in a double chest full of 64-stacks
     protected static final String INVENTORY_NAME = "Items";
-    public ArrayDeque<ItemStack> items;
 
     protected Item item = null;
     protected int size = 0;
@@ -29,30 +28,12 @@ public class CrateBlockEntity extends DequeInventoryBlockEntity {
 
     public CrateBlockEntity(BlockPos pos, BlockState state) {
         super(SimpleCrates.CRATE_BE, pos, state);
-        items = new ArrayDeque<>(MAX_ITEMS);
+        items = new ArrayList<>(1);
         FACING = state.get(CrateBlock.FACING);
     }
 
     private int getSpace(){
         return MAX_ITEMS - this.size;
-    }
-
-    public Item getItem(){
-        if(item == null){
-            return Items.AIR;
-        }
-        return item;
-    }
-
-    public int getCount(){
-        return size;
-    }
-
-    public void set(Item item, int count){
-        if (world != null && world.isClient) {
-            this.item = item;
-            this.size = count;
-        }
     }
 
     @Override
@@ -61,22 +42,23 @@ public class CrateBlockEntity extends DequeInventoryBlockEntity {
     }
 
     @Override
-    public void push(ItemStack stack){
-        ItemStack top = items.peekFirst();
-        //combine with top stack if possible first
-        if(top != null && ItemStack.canCombine(top, stack) && top.getCount() < top.getMaxCount()){
-            item = stack.getItem();
-            int diff = top.getMaxCount() - top.getCount();
-            int available = stack.getCount();
-            int toAdd = Math.min(diff, available);
-            top.increment(toAdd);
-            stack.decrement(toAdd);
-            size += toAdd;
-            this.comparatorUpdate();
+    public void pushStack(ItemStack stack){
+        //combine with exsiting stacks if possible first
+        for (ItemStack s : items) {
+            if (s != null && ItemStack.canCombine(s, stack) && s.getCount() < s.getMaxCount()) {
+                item = stack.getItem();
+                int diff = s.getMaxCount() - s.getCount();
+                int available = stack.getCount();
+                int toAdd = Math.min(diff, available);
+                s.increment(toAdd);
+                stack.decrement(toAdd);
+                size += toAdd;
+                this.comparatorUpdate();
+            }
         }
         //if there are any items left over, add a new stack
         if(!stack.isEmpty()) {
-            items.push(stack);
+            items.add(0, stack);
             item = stack.getItem();
             size += stack.getCount();
             this.comparatorUpdate();
@@ -92,36 +74,36 @@ public class CrateBlockEntity extends DequeInventoryBlockEntity {
         }*/
     }
 
-    public ItemStack pop(){
-        if(items.isEmpty()){
-            return ItemStack.EMPTY;
+    @Override
+    public ItemStack takeStack() {
+        if (items.size() > 1 && ItemStack.canCombine(getStack(0), getStack(1))) { //if the top two stacks are combinable
+            return takeStack(item.getMaxCount()); //grab a full stack
+        } else if (items.size() < 1) {
+            return null;
+        } else {
+            return takeStack(items.get(0).getCount()); //otherwise grab the top stack
         }
-        return pop(peek().getCount());
     }
 
-    public ItemStack pop(int count) {
-        if(items.isEmpty()){
-            return ItemStack.EMPTY;
+    @Override
+    public ItemStack takeStack(int amount) {
+        if (items.size() < 1) {
+            return null;
         }
-        ItemStack stack = items.pop();
-        ItemStack finalStack = stack.split(count);
-        size -= finalStack.getCount();
-        if(items.isEmpty()){
-            item = null;
+        ItemStack top = items.get(0).copy();
+        if(top.getCount() < amount) { //if there's room for more...
+            int diff = amount - top.getCount();
+            items.get(1).decrement(diff); //take the difference from the next stack
+            if(items.get(1).getCount() == 0) { //and delete that stack if it's emptied
+                items.remove(1);
+            }
+            top.increment(diff); //then add those items to the new stack
         }
-        if(!stack.isEmpty()){
-            items.push(stack);
-        }
+        items.remove(0); //remove the top stack as we take it
+
         this.markDirty();
         this.comparatorUpdate();
-        return finalStack;
-    }
-
-    public ItemStack peek() {
-        if(items.isEmpty()) {
-            return ItemStack.EMPTY;
-        }
-        return items.peekFirst();
+        return top;
     }
 
     @Override
@@ -149,7 +131,7 @@ public class CrateBlockEntity extends DequeInventoryBlockEntity {
         NbtList list = nbt.getList(INVENTORY_NAME, NbtElement.COMPOUND_TYPE);
         for(NbtElement e : list) {
             ItemStack stack = ItemStack.fromNbt((NbtCompound) e);
-            this.push(stack);
+            this.pushStack(stack);
         }
     }
 
@@ -160,12 +142,6 @@ public class CrateBlockEntity extends DequeInventoryBlockEntity {
     }
 
     // standard block entity stuff
-    private void sync() {
-        if(this.world != null && !this.world.isClient) {
-            ((ServerWorld) this.world).getChunkManager().markForUpdate(this.pos);
-        }
-    }
-
     @Override
     public NbtCompound toInitialChunkDataNbt() {
         NbtCompound tag = new NbtCompound();
@@ -181,6 +157,8 @@ public class CrateBlockEntity extends DequeInventoryBlockEntity {
 
     @Override
     public void markDirty() {
-        sync();
+        if(world == null || world.isClient) {return;}
+        PlayerLookup.tracking(this).forEach(player -> player.networkHandler.sendPacket(toUpdatePacket()));
+        super.markDirty();
     }
 }

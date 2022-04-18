@@ -62,7 +62,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
         assert crateBE != null;
         if(side == state.get(FACING)) {
             if (player.isSneaking() && player.getInventory().getEmptySlot() > -1){ //player is sneaking and has inventory space
-                ItemStack grabbed = crateBE.pop();
+                ItemStack grabbed = crateBE.takeStack();
                 if(grabbed != null){
                     if(held.isEmpty()){
                         player.setStackInHand(hand, grabbed);
