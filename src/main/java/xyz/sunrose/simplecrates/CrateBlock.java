@@ -121,7 +121,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
         }
     }
 
-    public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+    /*public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
         CrateBlockEntity crate = (CrateBlockEntity) world.getBlockEntity(pos);
         if(!world.isClient && crate != null) {
             //make item and set nbt if needed
@@ -136,7 +136,7 @@ public class CrateBlock extends Block implements BlockEntityProvider {
         }
 
         super.onBreak(world, pos, state, player);
-    }
+    }*/
 
     @Override
     public List<ItemStack> getDroppedStacks(BlockState state, LootContext.Builder builder) {

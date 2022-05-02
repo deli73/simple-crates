@@ -5,7 +5,6 @@ import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.tag.TagFactory;
-import net.fabricmc.fabric.api.tag.TagRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntityType;
@@ -15,14 +14,12 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SimpleCrates implements ModInitializer {
     public static final String MODID = "simplecrates";
     public static final Logger LOGGER = LoggerFactory.getLogger(MODID);
-    public static final Identifier NET_CRATE_UPDATE = new Identifier(MODID, "crate_update");
 
     public static final Identifier crate_id = new Identifier(MODID, "crate");
 
